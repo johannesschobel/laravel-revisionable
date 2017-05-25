@@ -1,8 +1,9 @@
-# JohannesSchhobel/Laravel-Revisionable
+# JohannesSchobel/Laravel-Revisionable
 
-Nice and easy way to handle revisions of your db.
+Easy and conventient way to handle revisions of your models within the database.
 
-* Handles the revisions in **bulk** - one entry covers all the created/updated fields, what makes it really **easy to eg. compare 2 given versions** or get all the data changed during single action.
+* Handles the revisions in **bulk** - one entry covers all the created/updated fields, what makes it really **easy to 
+e.g., compare 2 given versions** or get all the data changed during one single transaction.
 
 
 ## Requirements
@@ -10,33 +11,30 @@ Nice and easy way to handle revisions of your db.
 * This package requires PHP 5.4+
 * Currently it works out of the box with Laravel5.4 + generic Illuminate Guard, tymon/jwt-auth OR cartalyst/sentry 2/sentinel 2
 
-
-## Usage (Laravel5 basic example - see Customization below as well)
+## Usage (Laravel 5 basic example - see Customization below as well)
 
 ### 1. Download the package or require in your `composer.json`:
 
 ```
-composer require sofa/revisionable
+composer require johannesschobel/laravel-revisionable
 ```
 
 ### 2. Add the service provider to your `app/config/app.php`:
 
 ```php
     'providers' => array(
-
         ...
-
-        'Sofa\Revisionable\Laravel\ServiceProvider',
+        'JohannesSchobel\Revisionable\RevisionableServiceProvider',
     ),
 ```
 
 ### 3. Publish the package config file:
 
 ```
-~$ php artisan vendor:publish [--provider="Sofa\Revisionable\Laravel\ServiceProvider"]
+~$ php artisan vendor:publish [--provider="JohannesSchobel\Revisionable\RevisionableServiceProvider"]
 ```
 
-this will create `config/sofa_revisionable.php` file, where you can adjust a few settings:
+this will create `config/revisionable.php` file, where you can adjust a few settings:
 
 ```php
 <?php
@@ -48,7 +46,7 @@ return [
     | User model (for executor relation on Revision model).
     |--------------------------------------------------------------------------
     |
-    | By default App\User.
+    | By default the App\User model
     */
     'usermodel' => 'App\User',
 
@@ -64,7 +62,7 @@ return [
     |  - sentry
     |  - sentinel
     |  - jwt-auth
-    |  - session 
+    |  - session
     */
     'userprovider' => 'illuminate',
 
@@ -97,7 +95,19 @@ return [
     */
     'connection' => null,
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Further configuration settings
+    |--------------------------------------------------------------------------
+    */
+    'revisions' => [
+        'limit' => 20,
+        'limitCleanup' => true,
+    ]
+
 ];
+
 ```
 
 
@@ -107,62 +117,66 @@ return [
 ~$ php artisan migrate
 ```
 
-You can provide additional `--database` param if you want the migration to be run using non-default db connection.
-
-
 ### 5. Add revisionable trait to the models you wish to keep track of:
 
 ```php
-<?php namespace App;
+<?php
+
+namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Sofa\Revisionable\Laravel\Revisionable; // trait
+use JohannesSchobel\Revisionable\Traits\Revisionable;
 
 class User extends Model
 {
     use Revisionable;
+}    
+```
 
+And that's all to get you started!
+
+## Customization
+
+The package offers a set of configuration options.
+
+### White-Listing Fields
+If you would like to revision only specific fields of the model, you can define them like so:
+
+```php
     /*
      * Set revisionable whitelist - only changes to any
      * of these fields will be tracked during updates.
      */
     protected $revisionable = [
         'email',
-        'name',
+        'name'
     ];
+
 ```
 
+This way, only the fields `email` and `name` are tracked and store as revision in the database. The default behaviour
+is to revision all fields.
 
-And that's all to get your started!
-
-
-## Customization in L5
-
-**Default behaviour**:
-```php
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Sofa\Revisionable\Laravel\Revisionable;
-
-class Ticket extends Model
-{
-    use Revisionable;
-}
-```
+### Disable Revisions
 
 If you want to disable revisions for a specific model just add the following variables to your model
 ```php
-protected $revisionEnabled = false;
+    protected $revisionEnabled = false;
 ```
 
-You can further specify, how many revisions of a given model shall be kept (default value is set to 20). Furthermore,
-you may customize, if "older" revisions shall be deleted if the limit is reached. You may customize this behaviour for
-each model by changing the variables
+### Revision Cleanup
+
+You can further specify that you only want to clean up old revisions of a model. By doing so, you can further define, 
+how many revisions of one model you would like to keep in your database (default is set to 20). Say, if you add the 21st
+revision, the first one is deleted.
+
+You may customize this behaviour for each model by changing the variables
 ```php
-protected $revisionLimit = 50;  // keep 50 instead of 20 revisions of this model
-protected $revisionLimitCleanup = false; // do not cleanup older models - this will result in not storing additional revisions!
+    protected $revisionLimitCleanup = true; // only works with revisionLimit
+    protected $revisionLimit = 50;  // keep 50 instead of 20 revisions of this model
 ```
+
+## Demonstration
 
 ```php
 $ php artisan tinker
@@ -213,73 +227,4 @@ $ php artisan tinker
 
 >>> $revision->action;
 => "updated"
-```
-
-But here's where you can leverage bundled `Presenter` in order to make useful adjustments:
-
-```php
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Sofa\Revisionable\Laravel\Revisionable;
-
-class Ticket extends Model
-{
-    use Revisionable;
-
-    protected $revisionPresenter = 'App\Presenters\Revisions\Ticket';
-}
-```
-
-```php
-namespace App\Presenters\Revisions;
-
-use Sofa\Revisionable\Laravel\Presenter;
-
-class Ticket extends Presenter
-{
-    protected $labels = [
-        'item_id'        => 'Przedmiot',
-        'customer_id'    => 'Klient',
-        'status_id'      => 'Status',
-        'responsible_id' => 'Serwisant',
-        'defect'         => 'Usterka',
-        'note'           => 'Uwagi',
-    ];
-
-    protected $passThrough = [
-        'item_id'        => 'item.name',
-        'customer_id'    => 'customer.name',
-        'responsible_id' => 'serviceman.name',
-        'status_id'      => 'status.name',
-    ];
-
-    protected $actions = [
-        'created'  => 'utworzony',
-        'updated'  => 'edytowany',
-        'deleted'  => 'usunięty',
-        'restored' => 'przywrócony',
-    ];
-
-}
-```
-
-then
-```
-$ php artisan tinker
-
->>> $ticket = App\Models\Ticket::first();
-=> <App\Models\Ticket>
-
->>> $revision->old('item_id'); // value fetched from the relationship
-=> "komputer pc"
-
->>> $revision->new('item_id'); // value fetched from the relationship
-=> "laptop acer"
-
->>> $revision->label('item_id'); // custom label defined in the presenter
-=> "Przedmiot"
-
->>> $revision->action; // custom action name defined in the presenter
-=> "edytowany"
 ```
