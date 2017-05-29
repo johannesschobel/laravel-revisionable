@@ -2,8 +2,8 @@
 
 namespace JohannesSchobel\Revisionable\Laravel;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use JohannesSchobel\Revisionable\Models\Revision;
 use JohannesSchobel\Revisionable\Traits\Revisionable;
 

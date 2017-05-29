@@ -2,7 +2,6 @@
 
 namespace JohannesSchobel\Revisionable\Laravel;
 
-use Carbon\Carbon;
 use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 use JohannesSchobel\Revisionable\Models\Revision;
 

@@ -2,8 +2,8 @@
 
 namespace JohannesSchobel\Revisionable\Adapters;
 
-use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 use Cartalyst\Sentinel\Sentinel as SentinelProvider;
+use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 
 class Sentinel implements UserProvider
 {

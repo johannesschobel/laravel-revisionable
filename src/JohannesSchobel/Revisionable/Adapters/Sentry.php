@@ -2,8 +2,8 @@
 
 namespace JohannesSchobel\Revisionable\Adapters;
 
-use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 use Cartalyst\Sentry\Sentry as SentryProvider;
+use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 
 class Sentry implements UserProvider
 {

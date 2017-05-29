@@ -3,9 +3,9 @@
 namespace JohannesSchobel\Revisionable;
 
 use Illuminate\Support\ServiceProvider;
+use JohannesSchobel\Revisionable\Adapters;
 use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 use JohannesSchobel\Revisionable\Models\Revision;
-use JohannesSchobel\Revisionable\Adapters;
 
 class RevisionableServiceProvider extends ServiceProvider
 {

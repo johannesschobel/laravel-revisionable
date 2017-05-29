@@ -34,82 +34,7 @@ composer require johannesschobel/laravel-revisionable
 ~$ php artisan vendor:publish [--provider="JohannesSchobel\Revisionable\RevisionableServiceProvider"]
 ```
 
-this will create `config/revisionable.php` file, where you can adjust a few settings:
-
-```php
-<?php
-
-return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | User model (for executor relation on Revision model).
-    |--------------------------------------------------------------------------
-    |
-    | By default the App\User model
-    */
-    'usermodel' => 'App\User',
-
-    /*
-    |--------------------------------------------------------------------------
-    | User provider (auth) implementation.
-    |--------------------------------------------------------------------------
-    |
-    | By default Laravel generic Illuminate\Auth\Guard.
-    |
-    | Supported options:
-    |  - illuminate
-    |  - sentry
-    |  - sentinel
-    |  - jwt-auth
-    |  - session
-    */
-    'userprovider' => 'illuminate',
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | User field to be saved as the author of tracked action.
-    |--------------------------------------------------------------------------
-    |
-    | By default:
-    |
-    |  - id for illuminate
-    |  - login field (email) for sentry/sentinel
-    */
-    'userfield' => 'id',
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Table used for the revisions.
-    |--------------------------------------------------------------------------
-    */
-    'table' => 'revisions',
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Database connection used for the revisions.
-    |--------------------------------------------------------------------------
-    */
-    'connection' => null,
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Further configuration settings
-    |--------------------------------------------------------------------------
-    */
-    'revisions' => [
-        'limit' => 20,
-        'limitCleanup' => true,
-    ]
-
-];
-
-```
-
+this will create `config/revisionable.php` file, where you can adjust a few settings.
 
 ### 4. Run the migration in order to create the revisions table:
 
@@ -176,6 +101,17 @@ You may customize this behaviour for each model by changing the variables
     protected $revisionLimit = 50;  // keep 50 instead of 20 revisions of this model
 ```
 
+## Rollback (aka load old revisions)
+
+Of course, you can rollback to an old revision of your model. The `Trait` added earlier (e.g., the `Revisionable` trait) 
+already provides handy methods for you - so you don't need to worry about this.
+
+You can either use the `$model->rollbackToTimestamp($timestamp)` or `$model->rollbackSteps($steps)` functions for this 
+purpose. Note that there is a configuration flag `revisionable.rollback.cleanup` (default `false`) that indicates, 
+whether the revisions rolled back should be deleted (`true`) or not (`false`).
+
+Both functions return the rolled back model, which is already persisted in the database.
+
 ## Demonstration
 
 ```php
@@ -217,8 +153,8 @@ $ php artisan tinker
 
 >>> $revision->old;
 => [
-       "defect"         => "nie dziala",
-       "note"           => "wrocilo na gwarancji",
+       "defect"         => "foo",
+       "note"           => "bar",
        "customer_id"    => "1",
        "item_id"        => "2",
        "responsible_id" => "8",

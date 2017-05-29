@@ -2,8 +2,8 @@
 
 namespace JohannesSchobel\Revisionable\Adapters;
 
-use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 use Illuminate\Contracts\Auth\Guard as BaseGuard;
+use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 
 class Guard implements UserProvider
 {

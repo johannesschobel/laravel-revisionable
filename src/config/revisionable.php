@@ -64,7 +64,7 @@ return [
     */
     'revisions' => [
         'limit' => 20,
-        'limitCleanup' => true,
+        'limitCleanup' => false,
     ],
 
 
@@ -74,7 +74,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'rollback' => [
-        'cleanup' => true,
+        'cleanup' => false,
     ],
 
 ];
