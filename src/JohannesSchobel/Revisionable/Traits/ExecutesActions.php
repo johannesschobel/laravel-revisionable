@@ -49,7 +49,7 @@ trait ExecutesActions
     /**
      * Accessor for latestAction attribute.
      *
-     * @return \Sofa\Revisionable\Laravel\Presenter|\Sofa\Revisionable\Laravel\Revision
+     * @return \JohannesSchobel\Revisionable\Laravel\Presenter|\JohannesSchobel\Revisionable\Laravel\Revision
      */
     public function getLatestActionAttribute()
     {

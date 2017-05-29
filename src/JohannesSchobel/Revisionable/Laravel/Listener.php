@@ -66,7 +66,7 @@ class Listener
      */
     protected function log($action, $revisioned)
     {
-        if(! $revisioned->enableRevisionForModel()) {
+        if(! $revisioned->getConfigRevisionForModel()) {
             return;
         }
 
@@ -99,11 +99,11 @@ class Listener
         ]);
 
         // check if we need to cleanup old revisions
-        if($revisioned->getRevisionLimitCleanup()) {
+        if($revisioned->getConfigRevisionLimitCleanup()) {
             // we need to cleanup
-            if($revisioned->revisions()->count() > $revisioned->getRevisionLimit()) {
+            if($revisioned->revisions()->count() > $revisioned->getConfigRevisionLimit()) {
                 // we currently have more revisions than we want to have
-                $diff = $revisioned->revisions()->count() - $revisioned->getRevisionLimit();
+                $diff = $revisioned->revisions()->count() - $revisioned->getConfigRevisionLimit();
                 // we need to delete the oldest N revisions
                 $revsToDelete = $revisioned->revisions()->get()->reverse()->take($diff);
                 foreach($revsToDelete as $rev) {

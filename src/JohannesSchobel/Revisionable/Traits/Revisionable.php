@@ -21,11 +21,11 @@ trait Revisionable
     /**
      * Get record version at given timestamp.
      *
-     * @param \DateTime|string $timestamp DateTime|Carbon object or parsable date string @see strtotime()
+     * @param \DateTime|string $timestamp DateTime|Carbon object or parseable date string @see strtotime()
      *
      * @return Revision|null
      */
-    public function snapshot($timestamp)
+    public function revisionAtTimestamp($timestamp)
     {
         $revision = $this->revisions()
                          ->where('created_at', '<=', Carbon::parse($timestamp))
@@ -37,13 +37,65 @@ trait Revisionable
     /**
      * Get record version at given step back in history.
      *
-     * @param int $step
+     * @param int $steps
      *
      * @return Revision|null
      */
-    public function historyStep($step)
+    public function revisionForSteps($steps)
     {
-        return $this->wrapRevision($this->revisions()->skip($step)->first());
+        return $this->wrapRevision($this->revisions()->skip($steps)->first());
+    }
+
+    /**
+     * Rollback to a given timestamp. Timestamp must be a Carbon or DateTime object or anything that is parseable by
+     * the PHP strtotime() function.
+     *
+     * @param $timestamp
+     * @return Revision|null
+     */
+    public function rollbackToTimestamp($timestamp) {
+        $revision = $this->revisionAtTimestamp($timestamp);
+
+        return $this->rollbackToRevision($revision);
+    }
+
+    /**
+     * Rollback X steps.
+     *
+     * @param $steps
+     * @return Revision|null
+     */
+    public function rollbackSteps($steps) {
+        $revision = $this->revisionForSteps($steps);
+
+        return $this->rollbackToRevision($revision);
+    }
+
+    /**
+     * Rollback to a given revision.
+     *
+     * @param Revision $revision
+     * @return Revision|null
+     */
+    private function rollbackToRevision(Revision $revision) {
+        if ($revision == null) {
+            return null;
+        }
+
+        $current = $revision->revisioned;
+
+        // delete the old revisions for this model if needed
+        if($this->getConfigRollbackCleanup()) {
+            $revisionsToDelete = $current->revisions()->where('id', '>=', $revision->id)->delete();
+        }
+
+        $current->fill($revision->old);
+        $current->save();
+
+        // reload the relations
+        $current = $current->load('revisions');
+
+        return $current;
     }
 
     /**
@@ -56,7 +108,7 @@ trait Revisionable
     public function hasHistory($timestamp = null)
     {
         if ($timestamp) {
-            return (bool) $this->snapshot($timestamp);
+            return (bool) $this->revisionAtTimestamp($timestamp);
         }
 
         return $this->revisions()->exists();
@@ -239,7 +291,7 @@ trait Revisionable
      *
      * @return bool
      */
-    public function enableRevisionForModel() {
+    public function getConfigRevisionForModel() {
         if(is_null($this->revisionEnabled)) {
             // the parameter is not set - default behaviour is to create revisions
             return true;
@@ -256,7 +308,7 @@ trait Revisionable
      *
      * @return int
      */
-    public function getRevisionLimit() {
+    public function getConfigRevisionLimit() {
         $default = Config::get('revisionable.revisions.limit');
         if(is_null($this->revisionLimit)) {
             // the parameter is not set - default behaviour is to create revisions
@@ -272,9 +324,10 @@ trait Revisionable
 
     /**
      * Returns if older revisions shall be removed
+     *
      * @return bool
      */
-    public function getRevisionLimitCleanup() {
+    public function getConfigRevisionLimitCleanup() {
         $default = Config::get('revisionable.revisions.limitCleanup');
         if(is_null($this->revisionLimitCleanup)) {
             // the parameter is not set - default behaviour is to create revisions
@@ -287,4 +340,14 @@ trait Revisionable
 
         return true;
     }
+
+    /**
+     * Get the config parameter to cleanup on rollback
+     *
+     * @return mixed
+     */
+    public function getConfigRollbackCleanup() {
+        return Config::get('revisionable.rollback.cleanup');
+    }
+
 }
