@@ -89,6 +89,9 @@ trait Revisionable
             $revisionsToDelete = $current->revisions()->where('id', '>=', $revision->id)->delete();
         }
 
+        // fire event
+        event('revisionable-rollingback', $current);
+
         $current->fill($revision->old);
         $current->save();
 
