@@ -191,7 +191,15 @@ trait Revisionable
      */
     public function getRevisionable()
     {
-        return property_exists($this, 'revisionable') ? (array) $this->revisionable : [];
+        if (!property_exists($this, 'revisionable') && property_exists($this, 'fillable')) {
+            return (array) $this->fillable;
+        }
+
+        if (property_exists($this, 'revisionable') && !property_exists($this, 'fillable')) {
+            return (array) $this->revisionable;
+        }
+
+        return array_merge($this->fillable, $this->revisionable);
     }
 
     /**
@@ -202,9 +210,16 @@ trait Revisionable
      */
     public function getNonRevisionable()
     {
-        return property_exists($this, 'nonRevisionable')
-                ? (array) $this->nonRevisionable
-                : ['created_at', 'updated_at', 'deleted_at'];
+        $nonRevisionable = property_exists($this, 'nonRevisionable')
+            ? (array) $this->nonRevisionable
+            : [];
+
+        return array_merge(
+            $nonRevisionable,
+            ['created_at', 'updated_at', 'deleted_at'],
+            $this->guarded,
+            $this->hidden
+        );
     }
 
     /**
