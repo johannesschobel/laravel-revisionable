@@ -3,16 +3,18 @@
 namespace JohannesSchobel\Revisionable;
 
 use Illuminate\Support\ServiceProvider;
-use JohannesSchobel\Revisionable\Adapters;
-use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 use JohannesSchobel\Revisionable\Models\Revision;
+use JohannesSchobel\Revisionable\Interfaces\UserProvider;
 
 class RevisionableServiceProvider extends ServiceProvider
 {
-    public function boot() {
+    public function boot()
+    {
         $this->publishes([
-            __DIR__.'/../../config/revisionable.php'   => config_path('revisionable.php'),
+            __DIR__ . '/../../config' => config_path(),
         ], 'config');
+
+        $this->loadMigrationsFrom(__DIR__ . '/../../migrations');
     }
 
     /**
@@ -26,9 +28,10 @@ class RevisionableServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get the Configuration
+     * Get the Configuration.
      */
-    private function setupConfig() {
+    private function setupConfig()
+    {
         $this->mergeConfigFrom(realpath(__DIR__ . '/../../config/revisionable.php'), 'revisionable');
     }
 
@@ -60,6 +63,7 @@ class RevisionableServiceProvider extends ServiceProvider
                 $this->bindGuardProvider();
                 break;
         }
+
         $this->app->alias('revisionable.userprovider', UserProvider::class);
     }
 
@@ -70,6 +74,7 @@ class RevisionableServiceProvider extends ServiceProvider
     {
         $this->app->singleton('revisionable.userprovider', function ($app) {
             $field = $app['config']->get('revisionable.userfield');
+
             return new Adapters\Sentry($app['sentry'], $field);
         });
     }
@@ -81,6 +86,7 @@ class RevisionableServiceProvider extends ServiceProvider
     {
         $this->app->singleton('revisionable.userprovider', function ($app) {
             $field = $app['config']->get('revisionable.userfield');
+
             return new Adapters\Sentinel($app['sentinel'], $field);
         });
     }
@@ -92,6 +98,7 @@ class RevisionableServiceProvider extends ServiceProvider
     {
         $this->app->singleton('revisionable.userprovider', function ($app) {
             $field = $app['config']->get('revisionable.userfield');
+
             return new Adapters\JwtAuth($app['tymon.jwt.auth'], $field);
         });
     }
@@ -103,19 +110,19 @@ class RevisionableServiceProvider extends ServiceProvider
     {
         $this->app->singleton('revisionable.userprovider', function ($app) {
             $field = $app['config']->get('revisionable.userfield');
+
             return new Adapters\Guard($app['auth']->guard(), $field);
         });
     }
 
     /**
      * Bind adapter for Session to the IoC.
-     *
-     * @return void
      */
     protected function bindSessionProvider()
     {
         $this->app->singleton('revisionable.userprovider', function ($app) {
             $field = $app['config']->get('revisionable.userfield');
+
             return new Adapters\Session(session(), $field);
         });
     }
@@ -126,7 +133,7 @@ class RevisionableServiceProvider extends ServiceProvider
     protected function bootModel()
     {
         $table = $this->app['config']->get('revisionable.table', 'revisions');
-        $user = $this->app['config']->get('revisionable.usermodel', 'App\User');
+        $user  = $this->app['config']->get('revisionable.usermodel', 'App\User');
 
         forward_static_call_array([Revision::class, 'setCustomTable'], [$table]);
         forward_static_call_array([Revision::class, 'setUserModel'], [$user]);

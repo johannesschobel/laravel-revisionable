@@ -21,6 +21,13 @@
         "tymon/jwt-auth": "^0.5.3",
         "squizlabs/php_codesniffer": "~2.0"
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "JohannesSchobel\\Revisionable\\RevisionableServiceProvider"
+            ]
+        }
+    },
     "autoload": {
         "psr-0": {
             "JohannesSchobel\\Revisionable": "src/"

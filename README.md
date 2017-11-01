@@ -2,9 +2,8 @@
 
 Easy and conventient way to handle revisions of your models within the database.
 
-* Handles the revisions in **bulk** - one entry covers all the created/updated fields, what makes it really **easy to 
+* Handles the revisions in **bulk** - one entry covers all the created/updated fields, what makes it really **easy to
 e.g., compare 2 given versions** or get all the data changed during one single transaction.
-
 
 ## Requirements
 
@@ -31,7 +30,7 @@ composer require johannesschobel/laravel-revisionable
 ### 3. Publish the package config file:
 
 ```
-~$ php artisan vendor:publish [--provider="JohannesSchobel\Revisionable\RevisionableServiceProvider"]
+php artisan vendor:publish --provider="JohannesSchobel\Revisionable\RevisionableServiceProvider"
 ```
 
 this will create `config/revisionable.php` file, where you can adjust a few settings.
@@ -55,7 +54,7 @@ use JohannesSchobel\Revisionable\Traits\Revisionable;
 class User extends Model
 {
     use Revisionable;
-}    
+}
 ```
 
 And that's all to get you started!
@@ -91,7 +90,7 @@ If you want to disable revisions for a specific model just add the following var
 
 ### Revision Cleanup
 
-You can further specify that you only want to clean up old revisions of a model. By doing so, you can further define, 
+You can further specify that you only want to clean up old revisions of a model. By doing so, you can further define,
 how many revisions of one model you would like to keep in your database (default is set to 20). Say, if you add the 21st
 revision, the first one is deleted.
 
@@ -103,11 +102,11 @@ You may customize this behaviour for each model by changing the variables
 
 ## Rollback (aka load old revisions)
 
-Of course, you can rollback to an old revision of your model. The `Trait` added earlier (e.g., the `Revisionable` trait) 
+Of course, you can rollback to an old revision of your model. The `Trait` added earlier (e.g., the `Revisionable` trait)
 already provides handy methods for you - so you don't need to worry about this.
 
-You can either use the `$model->rollbackToTimestamp($timestamp)` or `$model->rollbackSteps($steps)` functions for this 
-purpose. Note that there is a configuration flag `revisionable.rollback.cleanup` (default `false`) that indicates, 
+You can either use the `$model->rollbackToTimestamp($timestamp)` or `$model->rollbackSteps($steps)` functions for this
+purpose. Note that there is a configuration flag `revisionable.rollback.cleanup` (default `false`) that indicates,
 whether the revisions rolled back should be deleted (`true`) or not (`false`).
 
 Both functions return the rolled back model, which is already persisted in the database.
@@ -119,6 +118,9 @@ $ php artisan tinker
 
 >>> $ticket = App\Models\Ticket::first();
 => <App\Models\Ticket>
+
+>>> $revision = $ticket->revisions->first();
+=> $revision
 
 >>> $revision->getDiff();
 => [

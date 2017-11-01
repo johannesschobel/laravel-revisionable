@@ -26,7 +26,7 @@ class Revision extends Model
      * @var array
      */
     protected $fillable = [
-        'table_name', 'action', 'user_id', 'user', 'old',
+        'table_name', 'action', 'user_id', 'old',
         'new', 'ip', 'ip_forwarded',
     ];
 
